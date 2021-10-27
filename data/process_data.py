@@ -17,7 +17,7 @@ def load_data(messages_filepath, categories_filepath):
     return df
 
 def clean_data(df):
-    df = load_data('disaster_messages.csv' , 'disaster_categories.csv')
+#     df = load_data('disaster_messages.csv' , 'disaster_categories.csv')
     splitted_categories = df['categories'].str.split(';', expand=True)
     # categories = categories['categories'].str.split(expand=True)
     for i in range(36):
