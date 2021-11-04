@@ -1,16 +1,23 @@
 import json
-import plotly
-import pandas as pd
+import numpy
 
+from numpy.lib.function_base import piecewise
+from numpy.lib.stride_tricks import as_strided
+import plotly
+
+import numpy as np
+import pandas as pd
+import plotly.graph_objs 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Scatter
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
+val = []
 
 app = Flask(__name__)
 
@@ -25,7 +32,7 @@ def tokenize(text):
 
     return clean_tokens
 
-# load data
+# load dataasd
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('DisasterResponse', engine)
 
@@ -44,7 +51,17 @@ def index():
     genre_names = list(genre_counts.index)
     
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
+    # save the count of the messages for each category in values list
+
+    catg_nam = df.iloc[:, 5:].columns
+    for i in catg_nam:
+        counts = df.groupby(i).count()['message']
+        values = list(counts.index)
+        val.append(counts[0])
+
+
+
+    
     graphs = [
         {
             'data': [
@@ -63,7 +80,27 @@ def index():
                     'title': "Genre"
                 }
             }
-        }
+        },
+        {
+            'data': [
+                Scatter(
+                    x=catg_nam,
+                    y=val
+                )
+            ],
+
+            'layout': {
+                'title': 'The count of the messages for each category',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Categories"
+                }
+            }
+        },
+        
+        
     ]
     
     # encode plotly graphs in JSON
@@ -82,7 +119,7 @@ def go():
 
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
-    classification_results = dict(zip(df.columns[4:], classification_labels))
+    classification_results = dict(zip(df.columns[5:], classification_labels))
 
     # This will render the go.html Please see that file. 
     return render_template(
